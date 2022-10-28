@@ -42,10 +42,11 @@ public class ExampleSubsystem extends SubsystemBase {
   }
 
   double speed = 1; //change
+  double launchSpeed = 1; //change
+  
   boolean run = false;
   boolean stored = false;
   boolean buttonPressed = false;
-  double launchSpeed = 1; //change
 
   @Override
   public void periodic() {
