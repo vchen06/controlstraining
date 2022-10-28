@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -15,20 +16,19 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class ExampleSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
-  private final CANSparkMax motor = new CANSparkMax(17, MotorType.kBrushless);
-  private final CANSparkMax motor2 = new CANSparkMax(1, MotorType.kBrushless);
-  //flywheels
-  private final CANSparkMax motor3 = new CANSparkMax(3, MotorType.kBrushless);
-  private final CANSparkMax motor4 = new CANSparkMax(16, MotorType.kBrushless);
+  
+  private final CANSparkMax motor = new CANSparkMax(3, MotorType.kBrushless);
+  private final CANSparkMax motor2 = new CANSparkMax(16, MotorType.kBrushless);
 
+  private final WPI_TalonSRX talon = new WPI_TalonSRX(8);
 
   private final XboxController controller = new XboxController(0);
 
   private final Timer timer = new Timer();
 
-  private final AnalogPotentiometer analog1 = new AnalogPotentiometer(0);
-  private final AnalogPotentiometer analog2 = new AnalogPotentiometer(1);
-  private final AnalogPotentiometer analog3 = new AnalogPotentiometer(2);
+  private final AnalogPotentiometer sensor1 = new AnalogPotentiometer(0);
+  private final AnalogPotentiometer sensor2 = new AnalogPotentiometer(1);
+  private final AnalogPotentiometer sensor3 = new AnalogPotentiometer(2);
 
   public ExampleSubsystem() {
     motor.restoreFactoryDefaults();
@@ -37,53 +37,48 @@ public class ExampleSubsystem extends SubsystemBase {
     motor.setIdleMode(IdleMode.kCoast);
     motor2.setIdleMode(IdleMode.kCoast);
 
-    timer.start();
   }
 
   double speed = 0;
-  
-  
   boolean run = false;
-
   boolean stored = false;
+  boolean button = false;
 
   @Override
   public void periodic() {
-    System.out.println(analog1.get());
-    System.out.println(analog2.get());
-    System.out.println(analog3.get());
-    System.out.println("_");
-    // if (analog1.get() >= n) {
-    //   motor.set(1);
-    // } 
+    talon.set(0);
+
+    //storing balls
+    if (run && sensor3.get() >= 1.65) { //ball reaches top
+      run = false;
+      stored = true;
+      speed = 0;
+    } else if (sensor1.get() >= 1.65 || sensor2.get() >= 1.65) { 
+    //if ball at entrance or lower part of store, run motors
+      run = true;
+      speed = 1;
+    }
+
+    //shooting balls
+    if (stored) {
+      if (button) {
+        motor.set(1); 
+        //when ball is shot, stop doing motor
+        if (timer.get() >= 1) { //change value
+          button = false;
+          stored = false;
+          timer.stop();
+          timer.reset();
+          motor.set(0);
+        }
+      }
+      else if (controller.getAButtonPressed()) {
+        button = true;
+        timer.start();
+      } 
+    }
 
 
-
-
-    // System.out.println(analog.get());
-    // motor.set(1-analog.get()/0.64);
-
-    //TIMER
-    // if (timer.get()<4) {
-    //   speed = timer.get()*0.25;
-    //   motor.set(speed);
-    // } else if (timer.get()<6){
-    //   speed = 1;
-    //   motor.set(speed);
-    // } else if (timer.get()<10) {
-    //   speed = 1-timer.get()/4;
-    //   motor.set(speed);
-    // }
-    
-    //day 1
-    // if (controller.getAButtonPressed()) {
-    //   run = !run;
-    // }
-    // if (!run) {
-    //   motor.set(0);
-    // } else {
-    //   motor.set(controller.getRightTriggerAxis() - controller.getLeftTriggerAxis());
-    // }
 
     
     
