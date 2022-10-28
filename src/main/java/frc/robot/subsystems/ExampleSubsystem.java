@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.Timer;
 public class ExampleSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   
-  private final CANSparkMax motor = new CANSparkMax(3, MotorType.kBrushless);
-  private final CANSparkMax motor2 = new CANSparkMax(16, MotorType.kBrushless);
+  private final CANSparkMax flywheel = new CANSparkMax(3, MotorType.kBrushless);
+  private final CANSparkMax flywheel2 = new CANSparkMax(16, MotorType.kBrushless);
 
   private final WPI_TalonSRX talon = new WPI_TalonSRX(8);
 
@@ -30,50 +30,51 @@ public class ExampleSubsystem extends SubsystemBase {
   private final AnalogPotentiometer sensor2 = new AnalogPotentiometer(1);
   private final AnalogPotentiometer sensor3 = new AnalogPotentiometer(2);
 
+  private final double ballDetected = 1.0; 
+
   public ExampleSubsystem() {
-    motor.restoreFactoryDefaults();
-    motor2.restoreFactoryDefaults();
-    motor2.follow(motor);
-    motor.setIdleMode(IdleMode.kCoast);
-    motor2.setIdleMode(IdleMode.kCoast);
+    flywheel.restoreFactoryDefaults();
+    flywheel2.restoreFactoryDefaults();
+    flywheel2.follow(flywheel);
+    flywheel.setIdleMode(IdleMode.kCoast);
+    flywheel2.setIdleMode(IdleMode.kCoast);
 
   }
 
-  double speed = 0;
+  double speed = 1; //change
   boolean run = false;
   boolean stored = false;
-  boolean button = false;
+  boolean buttonPressed = false;
+  double launchSpeed = 1; //change
 
   @Override
   public void periodic() {
-    talon.set(0);
 
     //storing balls
-    if (run && sensor3.get() >= 1.65) { //ball reaches top
+    if (run && sensor3.get() >= ballDetected) { //ball reaches top
       run = false;
       stored = true;
-      speed = 0;
-    } else if (sensor1.get() >= 1.65 || sensor2.get() >= 1.65) { 
+      talon.set(0);
+    } else if (!stored && (sensor1.get() >= ballDetected || sensor2.get() >= ballDetected)) { 
     //if ball at entrance or lower part of store, run motors
       run = true;
-      speed = 1;
+      talon.set(speed);
     }
 
     //shooting balls
     if (stored) {
-      if (button) {
-        motor.set(1); 
-        //when ball is shot, stop doing motor
-        if (timer.get() >= 1) { //change value
-          button = false;
+      if (buttonPressed) { 
+        if (timer.get() >= 1) { //time for ball to be shot, change value
+          buttonPressed = false;
           stored = false;
           timer.stop();
           timer.reset();
-          motor.set(0);
+          flywheel.set(0);
         }
       }
       else if (controller.getAButtonPressed()) {
-        button = true;
+        buttonPressed = true;
+        flywheel.set(launchSpeed);
         timer.start();
       } 
     }
