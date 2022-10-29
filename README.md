@@ -3,7 +3,7 @@
 my current code is for 1 ball. The talon motor moves it to the top (sensor 3) area and it will launch if there is a ball and the button is pressed.
 
 I was trying to make it work for multiple balls by letting the first ball store in the middle (sensor 2 area) instead of the top like I originally had. Then if another ball comes then the talon will spin and they will both be moved up until the original ball reaches sensor 3 area (will probably be changed with testing). 
-This was the code I was trying to do
+This was the code I was trying to do, I had booleans for if there is a ball at each sensor (s1, s2, s3 for sensor 1 etc)
 
 ```
 if (s1) {
