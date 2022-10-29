@@ -62,7 +62,7 @@ public class ExampleSubsystem extends SubsystemBase {
       talon.set(speed);
     }
     
-    //shooting balls with flywheels
+    //shooting balls with flywheelskfjdf
     if (stored) {
       if (buttonPressed) { 
         if (timer.get() >= 1) { //time for ball to be shot, change value
