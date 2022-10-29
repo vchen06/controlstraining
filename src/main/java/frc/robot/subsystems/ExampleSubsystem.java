@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.XboxController;
@@ -14,54 +16,71 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class ExampleSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
-  private final CANSparkMax motor = new CANSparkMax(17, MotorType.kBrushless);
+  
+  private final CANSparkMax flywheel = new CANSparkMax(3, MotorType.kBrushless);
+  private final CANSparkMax flywheel2 = new CANSparkMax(16, MotorType.kBrushless);
 
-  private final CANSparkMax motor2 = new CANSparkMax(1, MotorType.kBrushless);
+  private final WPI_TalonSRX talon = new WPI_TalonSRX(8);
 
   private final XboxController controller = new XboxController(0);
 
   private final Timer timer = new Timer();
 
-  private final AnalogPotentiometer analog = new AnalogPotentiometer(0);
+  private final AnalogPotentiometer sensor1 = new AnalogPotentiometer(0);
+  private final AnalogPotentiometer sensor2 = new AnalogPotentiometer(1);
+  private final AnalogPotentiometer sensor3 = new AnalogPotentiometer(2);
+
+  private final double ballDetected = 1.0; 
 
   public ExampleSubsystem() {
-    motor.restoreFactoryDefaults();
-    motor2.restoreFactoryDefaults();
-    motor2.follow(motor);
-    timer.start();
+    flywheel.restoreFactoryDefaults();
+    flywheel2.restoreFactoryDefaults();
+    flywheel2.follow(flywheel);
+    flywheel.setIdleMode(IdleMode.kCoast);
+    flywheel2.setIdleMode(IdleMode.kCoast);
+
   }
 
-  double speed = 0;
-  
-  
+  double speed = 1; //change
+  double launchSpeed = 1; //change
+
   boolean run = false;
+  boolean stored = false;
+  boolean buttonPressed = false;
 
   @Override
   public void periodic() {
-    System.out.println(analog.get());
 
-
-    //TIMER
-    // if (timer.get()<4) {
-    //   speed = timer.get()*0.25;
-    //   motor.set(speed);
-    // } else if (timer.get()<6){
-    //   speed = 1;
-    //   motor.set(speed);
-    // } else if (timer.get()<10) {
-    //   speed = 1-timer.get()/4;
-    //   motor.set(speed);
-    // }
+    //storing balls
+    if (run && sensor3.get() >= ballDetected) { //ball reaches top
+      run = false;
+      stored = true;
+      talon.set(0);
+    } else if (!stored && (sensor1.get() >= ballDetected || sensor2.get() >= ballDetected)) { 
+    //if ball at entrance or lower part of store, run motors
+      run = true;
+      talon.set(speed);
+    }
     
-    //day 1
-    // if (controller.getAButtonPressed()) {
-    //   run = !run;
-    // }
-    // if (!run) {
-    //   motor.set(0);
-    // } else {
-    //   motor.set(controller.getRightTriggerAxis() - controller.getLeftTriggerAxis());
-    // }
+    //shooting balls with flywheelskfjdf
+    if (stored) {
+      if (buttonPressed) { 
+        if (timer.get() >= 1) { //time for ball to be shot, change value
+          buttonPressed = false;
+          stored = false;
+          timer.stop();
+          timer.reset();
+          flywheel.set(0);
+        }
+      }
+      else if (controller.getAButtonPressed()) {
+        buttonPressed = true;
+        flywheel.set(launchSpeed);
+        timer.start();
+      } 
+    }
+
+
 
     
     
