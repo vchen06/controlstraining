@@ -43,7 +43,7 @@ public class ExampleSubsystem extends SubsystemBase {
 
   double speed = 1; //change
   double launchSpeed = 1; //change
-  
+
   boolean run = false;
   boolean stored = false;
   boolean buttonPressed = false;
@@ -61,8 +61,8 @@ public class ExampleSubsystem extends SubsystemBase {
       run = true;
       talon.set(speed);
     }
-
-    //shooting balls
+    
+    //shooting balls with flywheels
     if (stored) {
       if (buttonPressed) { 
         if (timer.get() >= 1) { //time for ball to be shot, change value
